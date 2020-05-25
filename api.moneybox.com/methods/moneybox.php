@@ -166,10 +166,36 @@ if (empty($token)){
     //обновить копилку
     function update($user, $connect, $token)
     {
+        $id = $_GET['id'];
+
+
+        $validate = $connect->prepare("SELECT token FROM moneybox WHERE moneybox_id =:id");
+        $validate->bindValue(':id', $id, PDO::PARAM_STR);
+        $validate->execute();
+        $validate = $validate->fetchAll();
+
+        if (empty($validate)){
+            http_response_code(404);
+            $res = [
+                "status" => false,
+                "message" => "moneybox not created"
+            ];
+            echo json_encode($res);
+            exit();
+        }elseif ($validate[0]['token'] != $token){
+            http_response_code(403);
+            $res = [
+                "status" => false,
+                "message" => "wrong token"
+            ];
+            echo json_encode($res);
+            exit();
+        }
+
         if (isset($user['moneybox_name'])) {
             $update = $connect->prepare("UPDATE moneybox SET moneybox_name=:moneybox_name WHERE moneybox_id =:id");
             $update->bindValue(':moneybox_name', $user['moneybox_name'], PDO::PARAM_STR);
-            $update->bindValue(':id', $user['moneybox_id'], PDO::PARAM_STR);
+            $update->bindValue(':id', $id, PDO::PARAM_STR);
             $update = $update->execute();
 
             if ($update) {
@@ -191,7 +217,7 @@ if (empty($token)){
         if (isset($user['target'])) {
             $update = $connect->prepare("UPDATE moneybox SET target=:target WHERE moneybox_id =:id");
             $update->bindValue(':target', $user['target'], PDO::PARAM_STR);
-            $update->bindValue(':id', $user['moneybox_id'], PDO::PARAM_STR);
+            $update->bindValue(':id', $id, PDO::PARAM_STR);
             $update = $update->execute();
 
             if ($update) {
@@ -213,7 +239,7 @@ if (empty($token)){
         if (isset($user['comment'])) {
             $update = $connect->prepare("UPDATE moneybox SET comment=:comment WHERE moneybox_id =:id");
             $update->bindValue(':comment', $user['comment'], PDO::PARAM_STR);
-            $update->bindValue(':id', $user['moneybox_id'], PDO::PARAM_STR);
+            $update->bindValue(':id', $id, PDO::PARAM_STR);
             $update = $update->execute();
 
             if ($update) {
@@ -235,7 +261,7 @@ if (empty($token)){
         if (isset($user['amount'])) {
             $update = $connect->prepare("UPDATE moneybox SET amount=:amount WHERE moneybox_id =:id");
             $update->bindValue(':amount', $user['amount'], PDO::PARAM_STR);
-            $update->bindValue(':id', $user['moneybox_id'], PDO::PARAM_STR);
+            $update->bindValue(':id', $id, PDO::PARAM_STR);
             $update = $update->execute();
 
             if ($update) {
@@ -254,6 +280,7 @@ if (empty($token)){
                 echo json_encode($res);
             }
         }
+
         if (isset($user['task'])) {
             $update = $connect->prepare("UPDATE moneybox_info SET task=:task WHERE info_id =:id");
             $update->bindValue(':task', $user['task'], PDO::PARAM_STR);
